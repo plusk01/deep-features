@@ -5,7 +5,7 @@ Abstract of the project report, found [here](report/report.pdf).
 
 > Almost all vision-based algorithms (deep learning and otherwise) rely on finding a set of lower dimensional features from a higher dimensional image space. In the visual tracking problem, salient features of the target(s) being tracked are selected using one of a variety of feature detector algorithms. Features are then corresponded across video frames and those measurements are passed to a filtering and data association stage. The bottleneck of most target trackers is the vision based frontend. The purpose of this work is to consider the computational efficiency and tracking accuracy of a convolutional network based approach.
 
-The answer to this question is still somewhat unresolved -- I think more work could be done to help answer this question. However, the results of this project seem to indicate that the traditional Good Features to Track algorithm with LK Optical Flow perform about 2x faster (~14fps) than the deep featuers approach.
+The answer to this question is still somewhat unresolved -- I think more work could be done to help answer this question. However, the results of this project seem to indicate that the traditional Good Features to Track algorithm with LK Optical Flow perform about 2x faster (~14fps) than the deep features approach.
 
 -------------------
 
