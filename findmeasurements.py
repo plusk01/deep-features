@@ -154,7 +154,7 @@ class DeepFeatures(object):
 
         if self.imsave and self.frame_num == 100:
             img = self.display_acts(acts)
-            scim.imsave('acts_%s.png'%self.layer_name, img)
+            scim.imsave('fmaps/acts_%s.png'%self.layer_name, img)
 
         # increment frame counter
         self.frame_num += 1
@@ -168,32 +168,46 @@ class DeepFeatures(object):
         fmap = fmap[roi_sh:roi_eh, roi_sw:roi_ew, self.feature_map]
         fmap = fmap/np.max(fmap)
 
+        # Erode while the image is small
+        fmap = cv2.erode(fmap, np.ones( (1,1), dtype=np.uint8), iterations=1)
+        fmap = cv2.dilate(fmap, np.ones( (3,3), dtype=np.uint8), iterations=2)
+
         # make big again so mapping will work
         fmap = cv2.resize(fmap, (frame.shape[1],frame.shape[0]))
 
         # Turn feature map into acts
-        threshold = 0.5
-        idx = np.where(fmap>threshold)
+        threshold_l = 0.50
+        threshold_u = 1.00
+        fmap_th = np.logical_and(fmap>threshold_l, fmap<threshold_u)
+        idx = np.where(fmap_th)
         yy = idx[0]
         xx = idx[1]
 
+        # define criteria, number of clusters(K) and apply kmeans()
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+        K = 10
+        Z = np.vstack((xx,yy)).T.astype(np.float32)
+        ret, label, center = cv2.kmeans(Z, K, criteria, 5, cv2.KMEANS_RANDOM_CENTERS)
+        
+
         if self.frame_num % 50 == 0 and False:
-            plt.scatter(xx,yy, marker='.')
+            print(len(xx))
+            plt.scatter(xx,yy, marker='.'); plt.hold(True)
+            plt.scatter(center[:,0],center[:,1],s = 80,c = 'y', marker = 's')
             plt.show()
 
+            # import ipdb; ipdb.set_trace()
+
         # Show the feature map and the thresholded image
-        # cv2.imshow('fmap',fmap)
-        # cv2.imshow('fmap_th',(fmap>threshold).astype(np.uint8)*255)
+        cv2.imshow('fmap',fmap)
+        cv2.imshow('fmap_th',fmap_th.astype(np.uint8)*255)
 
         # Shape features like the output of GFTT
-        features = np.reshape(np.array([xx,yy]).T, [len(xx), 1, 2]).astype(np.float32)
+        #features = np.reshape(np.array([xx,yy]).T, [len(xx), 1, 2]).astype(np.float32)
 
-        return features[4000:4100,:,:]
+        features = np.reshape(center, [center.shape[0], 1, 2]).astype(np.float32)
 
-
-    def inverse_mapping(scaled_features, frame, fmap):
-        pass
-
+        return features[:,:,:]
 
     def display_acts(self, acts):
         acts = np.squeeze(acts)
@@ -227,9 +241,4 @@ class DeepFeatures(object):
             font = cv2.FONT_HERSHEY_SIMPLEX
             cv2.putText(img, '%d'%(i+1), (sw,eh-5), font, 1, 1, 2)
 
-            # import ipdb; ipdb.set_trace()
-
-
         return img
-
- 
