@@ -16,7 +16,7 @@ print("Recorded fps: {}".format(fps))
 # Create some random colors
 color = np.random.randint(0,255,(100,3))
 
-findMeas = FindMeasurements(deep=True)
+findMeas = FindMeasurements(deep=False)
 
 # Create a mask image for drawing purposes
 mask = np.zeros( (height, width, 3), dtype=np.uint8 )
